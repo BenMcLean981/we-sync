@@ -26,7 +26,7 @@ export class CommandCommit<TState extends Memento> implements Commit<TState> {
   }
 
   public get parents(): Set<string> {
-    return new Set(this._parent);
+    return new Set([this._parent]);
   }
 
   public apply(parents: Record<string, TState>): TState {

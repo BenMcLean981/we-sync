@@ -62,12 +62,20 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
     return commit;
   }
 
+  public hasCommit(hash: string): boolean {
+    return hash in this._commits;
+  }
+
   public addCommit(commit: Commit<TState>): Workspace<TState> {
     if (commit.hash in this._commits) {
       throw new Error('Commit already in workspace.');
     }
 
-    if ([...commit.parents].some((p) => !(p in this._commits))) {
+    if (commit.parents.size === 0) {
+      throw new Error('Cannot add dangling commit.');
+    }
+
+    if ([...commit.parents].some((parentHash) => !this.hasCommit(parentHash))) {
       throw new Error('Missing parent commit.');
     }
 
@@ -87,34 +95,18 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
   }
 
   public getState(hash: string): TState {
-    const chain = this.getRootChain(hash);
-    const inOrder = chain.toReversed();
+    const commit = this.getCommit(hash);
 
-    return inOrder.reduce((state, commit) => commit.apply(state), {} as TState);
+    const parents: Record<string, TState> = {};
+
+    for (const parentHash of commit.parents) {
+      parents[parentHash] = this.getState(parentHash);
+    }
+
+    return commit.apply(parents);
   }
 
   public equals(other: unknown, tol?: number): boolean {
     throw new Error('Method not implemented.');
-  }
-
-  // TODO: Move this to a navigator.
-  private getRootChain(hash: string): ReadonlyArray<Commit<TState>> {
-    const commit = this.getCommit(hash);
-
-    return this.extendToRoot([commit]);
-  }
-
-  private extendToRoot(
-    chain: ReadonlyArray<Commit<TState>>
-  ): ReadonlyArray<Commit<TState>> {
-    const deepest = chain[chain.length - 1];
-
-    if (deepest.parent === null) {
-      return chain;
-    } else {
-      const extended = [...chain, this.getCommit(deepest.parent)];
-
-      return this.extendToRoot(extended);
-    }
   }
 }
