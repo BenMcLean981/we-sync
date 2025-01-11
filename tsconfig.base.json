@@ -14,7 +14,8 @@
     "incremental": true,
     "isolatedModules": true,
     "lib": [
-      "es2022"
+      "ESNext",
+      "ESNext.Array"
     ],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
