@@ -5,6 +5,7 @@ import { WorkspaceImp } from '../workspace-imp.js';
 import { type Command } from '../../command/command.js';
 import { CommandCommit } from '../../commit/command-commit.js';
 import { InitialCommit } from '../../commit/initial-commit.js';
+import { MergeCommit } from '../../commit/merge-commit.js';
 
 describe('WorkspaceImp', () => {
   it('Initializes to an empty state with a name.', () => {
@@ -15,7 +16,7 @@ describe('WorkspaceImp', () => {
     expect(state.value).toBe(5);
   });
 
-  it('Allows the document to be renamed.', () => {
+  it('Allows the state to have commands applied.', () => {
     let workspace = WorkspaceImp.makeNew(new State(5));
     const commit = new CommandCommit(workspace.head.hash, new SetCommand(6));
 
@@ -57,6 +58,21 @@ describe('WorkspaceImp', () => {
 
       expect(() => workspace.setHead('123')).toThrowError();
     });
+  });
+
+  it('Handles merge commits correctly.', () => {
+    const w = WorkspaceImp.makeNew(new State(5));
+    const c1 = new CommandCommit(w.head.hash, new SetCommand(6));
+    const c2 = new CommandCommit(w.head.hash, new SetCommand(7));
+
+    const m1 = new MergeCommit<State>(c1.hash, c2.hash, c1.hash);
+    const m2 = new MergeCommit<State>(c1.hash, c2.hash, c2.hash);
+
+    const w1 = w.addCommit(c1).addCommit(c2).addCommit(m1).setHead(m1.hash);
+    const w2 = w.addCommit(c1).addCommit(c2).addCommit(m2).setHead(m2.hash);
+
+    expect(w1.getState(w1.head.hash).value).toBe(6);
+    expect(w2.getState(w2.head.hash).value).toBe(7);
   });
 });
 

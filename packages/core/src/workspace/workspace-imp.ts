@@ -67,11 +67,7 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
       throw new Error('Commit already in workspace.');
     }
 
-    if (commit.parent === null) {
-      throw new Error('Commit has no parent.');
-    }
-
-    if (!(commit.parent in this._commits)) {
+    if ([...commit.parents].some((p) => !(p in this._commits))) {
       throw new Error('Missing parent commit.');
     }
 

@@ -6,11 +6,11 @@ import { Command } from '../command/index.js';
 export class CommandCommit<TState extends Memento> implements Commit<TState> {
   private readonly _hash: string;
 
-  private readonly _parent: string | null;
+  private readonly _parent: string;
 
   private readonly _command: Command<TState>;
 
-  public constructor(parent: string | null, command: Command<TState>) {
+  public constructor(parent: string, command: Command<TState>) {
     this._hash = sha1(
       JSON.stringify({
         parent,
@@ -25,11 +25,15 @@ export class CommandCommit<TState extends Memento> implements Commit<TState> {
     return this._hash;
   }
 
-  public get parent(): string | null {
-    return this._parent;
+  public get parents(): Set<string> {
+    return new Set(this._parent);
   }
 
-  public apply(state: TState): TState {
-    return this._command.apply(state);
+  public apply(parents: Record<string, TState>): TState {
+    if (!(this._parent in parents)) {
+      throw new Error('Parent not provided.');
+    }
+
+    return this._command.apply(parents[this._parent]);
   }
 }

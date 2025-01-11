@@ -1479,7 +1479,7 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@nx/devkit@20.3.1":
+"@nx/devkit@20.3.1", "@nx/devkit@^20.3.1":
   version "20.3.1"
   resolved "https://registry.yarnpkg.com/@nx/devkit/-/devkit-20.3.1.tgz#f8592e5a34c9cefcbd28dd5f5aa00a6eea01fd1f"
   integrity sha512-Z6VdBg5GRu2Vg9FpeQJY+zQ1TvBoMWk8cTCZOf8J6myjoWYbksRfpWfNIvEk9OUsEMhpg98vxH2Cc8JR1zfiew==
@@ -1493,7 +1493,7 @@
     tslib "^2.3.0"
     yargs-parser "21.1.1"
 
-"@nx/eslint-plugin@20.3.1":
+"@nx/eslint-plugin@^20.3.1":
   version "20.3.1"
   resolved "https://registry.yarnpkg.com/@nx/eslint-plugin/-/eslint-plugin-20.3.1.tgz#857d075db84781e97ec878bdeeb7f75dd2a37863"
   integrity sha512-R+slt72ZLisT2uPpOJGUt/HnVf8hDWZvUcqyrSKJ8A8XZQlBYnSaFuKerse/if/en6iRAzjSWjUo9vnBIFgVIQ==
@@ -1520,7 +1520,7 @@
     tslib "^2.3.0"
     typescript "~5.6.2"
 
-"@nx/js@20.3.1":
+"@nx/js@20.3.1", "@nx/js@^20.3.1":
   version "20.3.1"
   resolved "https://registry.yarnpkg.com/@nx/js/-/js-20.3.1.tgz#6e71405a073c4ea46a89f2cb26631a8069f1891d"
   integrity sha512-IHf1rLiwH1NUMphedJJMfstehD94IkwU4YxOkUMRA1tPbrmidF391gh70pE4VMkji/jzzkQXYhNsrNnAN6LRpw==
@@ -1668,7 +1668,7 @@
     picocolors "^1.1.0"
     tslib "^2.3.0"
 
-"@nx/workspace@20.3.1":
+"@nx/workspace@20.3.1", "@nx/workspace@^20.3.1":
   version "20.3.1"
   resolved "https://registry.yarnpkg.com/@nx/workspace/-/workspace-20.3.1.tgz#ed1cd250e84c518f31061b501beec4689f6b33eb"
   integrity sha512-2GQX19POWzTDV8XIAc/UCNruzs77jD2WwAkYAOveiTBqJIJVd64ueOBXZw1YkZLhXTFd0C13xT1CFo2fOvyJLg==

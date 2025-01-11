@@ -3,9 +3,9 @@ import type { Snapshot } from '../memento/snapshot.ts';
 export interface Commit<TState> {
   readonly hash: string;
 
-  readonly parent: string | null;
+  readonly parents: Set<string>;
 
-  apply(state: TState): TState;
+  apply(parents: Record<string, TState>): TState;
 }
 
 export interface CommitSnapshot extends Snapshot {
@@ -13,5 +13,5 @@ export interface CommitSnapshot extends Snapshot {
 
   hash: string;
 
-  parent: string | null;
+  parents: ReadonlyArray<string>;
 }

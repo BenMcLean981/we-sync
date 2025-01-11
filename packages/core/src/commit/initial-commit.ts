@@ -20,8 +20,8 @@ export class InitialCommit<TState extends Memento> implements Commit<TState> {
     return this._hash;
   }
 
-  public get parent(): string | null {
-    return null;
+  public get parents(): Set<string> {
+    return new Set();
   }
 
   public apply(): TState {
