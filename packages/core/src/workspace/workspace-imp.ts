@@ -94,6 +94,13 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
     );
   }
 
+  public addCommits(commits: Iterable<Commit<TState>>): Workspace<TState> {
+    return [...commits].reduce(
+      (w, c) => w.addCommit(c),
+      this as Workspace<TState>
+    );
+  }
+
   public setBranches(branches: Branches): Workspace<TState> {
     branches.getAll().forEach((branch) => {
       if (!this.hasCommit(branch.head)) {
