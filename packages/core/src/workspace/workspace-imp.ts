@@ -3,21 +3,25 @@ import type { Commit } from '../commit/commit.js';
 import { InitialCommit } from '../commit/initial-commit.js';
 import type { Memento } from '../memento/memento.js';
 import { uuid } from '../id.js';
+import { Branches, makeLocalBranch } from './branches.js';
+import { BranchesImp } from './branches-imp.js';
+
+export const MAIN_BRANCH = 'main';
 
 export class WorkspaceImp<TState> implements Workspace<TState> {
   private readonly _commits: Record<string, Commit<TState>>;
 
-  private readonly _headHash: string;
+  private readonly _branches: Branches;
 
   private readonly _id: string;
 
   private constructor(
     commits: Record<string, Commit<TState>>,
-    headHash: string,
+    branches: Branches,
     id: string = uuid()
   ) {
     this._commits = commits;
-    this._headHash = headHash;
+    this._branches = branches;
     this._id = id;
   }
 
@@ -25,8 +29,12 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
     return this._id;
   }
 
-  get head(): Commit<TState> {
-    return this.getCommit(this._headHash);
+  public get branches(): Branches {
+    return this._branches;
+  }
+
+  public get head(): Commit<TState> {
+    return this.getCommit(this._branches.getLocalBranch(MAIN_BRANCH).head);
   }
 
   public static makeNew<TState extends Memento>(
@@ -36,7 +44,7 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
 
     return new WorkspaceImp(
       WorkspaceImp.convertCommits([initialCommit]),
-      initialCommit.hash
+      BranchesImp.makeNew(makeLocalBranch(MAIN_BRANCH, initialCommit.hash))
     );
   }
 
@@ -81,17 +89,38 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
 
     return new WorkspaceImp(
       { ...this._commits, [commit.hash]: commit },
-      this._headHash,
+      this._branches,
       this._id
     );
   }
 
+  public setBranches(branches: Branches): Workspace<TState> {
+    branches.getAll().forEach((branch) => {
+      if (!this.hasCommit(branch.head)) {
+        throw new Error(
+          `Missing hash "${branch.head}" for branch "${branch.name}".`
+        );
+      }
+    });
+
+    return new WorkspaceImp(this._commits, branches, this._id);
+  }
+
+  /**
+   * @deprecated use setBranches.
+   *
+   * @param hash
+   */
   public setHead(hash: string): Workspace<TState> {
     if (!(hash in this._commits)) {
       throw new Error('Commit not in workspace.');
     }
 
-    return new WorkspaceImp(this._commits, hash, this._id);
+    return new WorkspaceImp(
+      this._commits,
+      this._branches.updateBranch(makeLocalBranch(MAIN_BRANCH, hash)),
+      this._id
+    );
   }
 
   public getState(hash: string): TState {

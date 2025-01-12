@@ -1,4 +1,6 @@
 export interface Branches {
+  getAll(): ReadonlyArray<Branch>;
+
   getLocalBranch(name: string): LocalBranch;
 
   getRemoteBranch(name: string): RemoteBranch;

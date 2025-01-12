@@ -27,6 +27,12 @@ export class BranchesImp implements Branches {
     return new BranchesImp(locals, remotes);
   }
 
+  public getAll(): ReadonlyArray<Branch> {
+    // TODO: Test this.
+
+    return [...Object.values(this._locals), ...Object.values(this._remotes)];
+  }
+
   public containsLocalBranch(name: string): boolean {
     return name in this._locals;
   }
