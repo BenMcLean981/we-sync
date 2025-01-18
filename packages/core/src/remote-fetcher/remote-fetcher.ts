@@ -12,11 +12,9 @@ export interface RemoteFetcher<TState> {
     hash: string
   ): Promise<ReadonlyArray<Commit<TState>>>;
 
-  push(commits: ReadonlyArray<Commit<TState>>): Promise<void>;
-
-  createRemote(
-    branchName: string,
+  push(
     commits: ReadonlyArray<Commit<TState>>,
+    branchName: string,
     head: string
   ): Promise<void>;
 }

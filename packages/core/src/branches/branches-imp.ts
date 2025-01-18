@@ -27,6 +27,10 @@ export class BranchesImp implements Branches {
     return new BranchesImp(locals, remotes);
   }
 
+  public static makeEmpty(): Branches {
+    return new BranchesImp({}, {});
+  }
+
   public getAll(): ReadonlyArray<Branch> {
     // TODO: Test this.
 

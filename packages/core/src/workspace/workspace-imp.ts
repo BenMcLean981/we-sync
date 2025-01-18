@@ -51,6 +51,10 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
     );
   }
 
+  public static makeEmpty<TState extends Memento>(): Workspace<TState> {
+    return new WorkspaceImp({}, BranchesImp.makeEmpty());
+  }
+
   private static convertCommits<TState>(
     commits: Iterable<Commit<TState>>
   ): Record<string, Commit<TState>> {

@@ -19,8 +19,8 @@ export function getDifferences<TState>(
   const localBranch = workspace.branches.getLocalBranch(branchName);
   const remoteBranch = workspace.branches.getRemoteBranch(branchName);
 
-  const allLocalCommits = getAllToRoot(workspace, localBranch.head);
-  const allRemoteCommits = getAllToRoot(workspace, remoteBranch.head);
+  const allLocalCommits = getAllPreviousCommits(workspace, localBranch.head);
+  const allRemoteCommits = getAllPreviousCommits(workspace, remoteBranch.head);
 
   const localDifference = difference(allLocalCommits, allRemoteCommits);
   const remoteDifference = difference(allRemoteCommits, allLocalCommits);
@@ -31,9 +31,10 @@ export function getDifferences<TState>(
   };
 }
 
-export function getAllToRoot<TState>(
+export function getAllPreviousCommits<TState>(
   workspace: Workspace<TState>,
-  hash: string
+  hash: string,
+  stop?: string
 ): Set<string> {
   const visited = new Set<string>();
   const toVisit = [hash];
@@ -44,7 +45,7 @@ export function getAllToRoot<TState>(
     const commit = workspace.getCommit(nextHash);
 
     [...commit.parents]
-      .filter((p) => !visited.has(p))
+      .filter((p) => !visited.has(p) && p !== stop)
       .forEach((p) => {
         toVisit.push(p);
       });
