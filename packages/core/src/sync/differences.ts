@@ -1,4 +1,4 @@
-import { Workspace } from './workspace.js';
+import { type Workspace } from '../workspace/index.js';
 
 export type Differences = {
   /**

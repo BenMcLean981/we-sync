@@ -1,8 +1,8 @@
-import { Workspace } from './workspace.js';
-import { RemoteFetcher } from './remote-fetcher.js';
-import { makeLocalBranch, makeRemoteBranch } from './branches.js';
-import { Commit } from '../commit/commit.js';
-import { Differences, getDifferences } from './differences.js';
+import { type Workspace } from '../workspace/index.js';
+import { type RemoteFetcher } from '../remote-fetcher/index.js';
+import { makeLocalBranch, makeRemoteBranch } from '../branches/index.js';
+import { type Commit } from '../commit/index.js';
+import { type Differences, getDifferences } from './differences.js';
 
 export type Conflict<TState> = {
   local: TState;

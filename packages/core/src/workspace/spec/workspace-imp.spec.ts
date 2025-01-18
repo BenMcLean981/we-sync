@@ -6,7 +6,7 @@ import { type Command } from '../../command/command.js';
 import { CommandCommit } from '../../commit/command-commit.js';
 import { InitialCommit } from '../../commit/initial-commit.js';
 import { MergeCommit } from '../../commit/merge-commit.js';
-import { makeLocalBranch } from '../branches.js';
+import { makeLocalBranch } from '../../branches/branches.js';
 
 describe('WorkspaceImp', () => {
   it('Initializes to an empty state with a name.', () => {

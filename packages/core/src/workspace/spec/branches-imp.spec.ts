@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect } from 'vitest';
 import {
   type Branches,
+  BranchesImp,
   makeLocalBranch,
   makeRemoteBranch,
-} from '../branches.js';
-import { BranchesImp } from '../branches-imp.js';
+} from '../../branches/index.js';
 
 describe('BranchesImp', () => {
   let branches: Branches;

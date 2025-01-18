@@ -23,13 +23,6 @@ module.exports = [
           ],
         },
       ],
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        {
-          varsIgnorePattern: '^_',
-          argsIgnorePattern: '^_',
-        },
-      ],
     },
   },
   {
@@ -41,7 +34,23 @@ module.exports = [
       '**/*.cjs',
       '**/*.mjs',
     ],
+    ignores: ['**/out-tsc/**', '**/dist/**'],
     // Override or add rules here
-    rules: {},
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/consistent-type-imports': [
+        'warn',
+        {
+          fixStyle: 'inline-type-imports',
+          prefer: 'type-imports',
+        },
+      ],
+    },
   },
 ];

@@ -1,7 +1,7 @@
 import { type Subject } from '../subject.js';
 import { SubjectImp } from '../subject-imp.js';
 import { DelegateObserver } from '../delegate-observer.js';
-import { Mock, vi } from 'vitest';
+import { type Mock, vi } from 'vitest';
 
 describe('Observer', () => {
   let fn: Mock;

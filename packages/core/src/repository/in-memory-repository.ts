@@ -1,10 +1,10 @@
 import type { ID, Identifiable } from '../id.ts';
 import type { Subject } from '../observer/index.js';
 import { SubjectImp } from '../observer/index.js';
-import type { Repository } from './repository.ts';
+import { type ObservableRepository } from './observable-repository.js';
 
 export class InMemoryRepository<T extends Identifiable>
-  implements Repository<T>
+  implements ObservableRepository<T>
 {
   private readonly _items: Record<ID, T> = {};
 

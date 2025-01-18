@@ -1,5 +1,5 @@
-import { Commit } from './commit.js';
-import { Memento } from '../memento/index.js';
+import { type Commit } from './commit.js';
+import { type Memento } from '../memento/index.js';
 import sha1 from 'sha1';
 
 export class MergeCommit<TState extends Memento> implements Commit<TState> {

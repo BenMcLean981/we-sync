@@ -1,7 +1,7 @@
-import { Mock } from 'vitest';
+import { type Mock } from 'vitest';
 
-import { Identifiable } from '../../id.js';
-import { Repository } from '../repository.js';
+import { type Identifiable } from '../../id.js';
+import { type Repository } from '../repository.js';
 import { InMemoryRepository } from '../in-memory-repository.js';
 import { DelegateObserver } from '../../observer/index.js';
 

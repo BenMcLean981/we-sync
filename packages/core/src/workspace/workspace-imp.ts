@@ -1,10 +1,13 @@
 import type { Workspace } from './workspace.js';
-import type { Commit } from '../commit/commit.js';
-import { InitialCommit } from '../commit/initial-commit.js';
-import type { Memento } from '../memento/memento.js';
+import type { Commit } from '../commit/index.js';
+import { InitialCommit } from '../commit/index.js';
+import type { Memento } from '../memento/index.js';
 import { uuid } from '../id.js';
-import { Branches, makeLocalBranch } from './branches.js';
-import { BranchesImp } from './branches-imp.js';
+import {
+  type Branches,
+  BranchesImp,
+  makeLocalBranch,
+} from '../branches/index.js';
 
 export const MAIN_BRANCH = 'main';
 

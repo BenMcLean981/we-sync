@@ -1,10 +1,10 @@
 import {
-  Branch,
-  Branches,
+  type Branch,
+  type Branches,
   isLocalBranch,
   isRemoteBranch,
-  LocalBranch,
-  RemoteBranch,
+  type LocalBranch,
+  type RemoteBranch,
 } from './branches.js';
 
 export class BranchesImp implements Branches {

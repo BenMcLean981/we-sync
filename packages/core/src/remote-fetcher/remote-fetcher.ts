@@ -1,4 +1,4 @@
-import { Commit } from '../commit/commit.js';
+import { type Commit } from '../commit/commit.js';
 
 export interface RemoteFetcher<TState> {
   /**
