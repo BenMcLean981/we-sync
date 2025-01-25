@@ -5,9 +5,7 @@ import { type Branches } from '../branches/branches.js';
 
 export interface Workspace<TState> extends Equalable {
   readonly id: string;
-
-  readonly head: Commit<TState>;
-
+  
   readonly branches: Branches;
 
   getState(hash: string): TState;

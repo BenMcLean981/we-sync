@@ -1,16 +1,18 @@
-import { type Snapshot } from '../../memento/snapshot.js';
-import { type Memento } from '../../memento/memento.js';
-import { type Equalable } from '../../equality/index.js';
 import { MAIN_BRANCH, WorkspaceImp } from '../workspace-imp.js';
-import { type Command } from '../../command/command.js';
-import { CommandCommit } from '../../commit/command-commit.js';
-import { InitialCommit } from '../../commit/initial-commit.js';
-import { MergeCommit } from '../../commit/merge-commit.js';
-import { makeLocalBranch } from '../../branches/branches.js';
+import {
+  CommandCommit,
+  type Commit,
+  InitialCommit,
+  MergeCommit,
+} from '../../commit/index.js';
+import { type LocalBranch, makeLocalBranch } from '../../branches/branches.js';
+import { SetCommand, TestState } from './test-state.js';
+import { beforeEach, describe, it } from 'vitest';
+import { type Workspace } from '../workspace.js';
 
 describe('WorkspaceImp', () => {
   it('Initializes to an empty state with a name.', () => {
-    const workspace = WorkspaceImp.makeNew<State>(new State(5));
+    const workspace = WorkspaceImp.makeNew<TestState>(new TestState(5));
 
     const state = workspace.getState(workspace.head.hash);
 
@@ -18,7 +20,7 @@ describe('WorkspaceImp', () => {
   });
 
   it('Allows the state to have commands applied.', () => {
-    let workspace = WorkspaceImp.makeNew(new State(5));
+    let workspace = WorkspaceImp.makeNew(new TestState(5));
     const commit = new CommandCommit(workspace.head.hash, new SetCommand(6));
 
     workspace = workspace
@@ -36,7 +38,7 @@ describe('WorkspaceImp', () => {
 
   describe('addCommit', () => {
     it('Throws an error for duplicate commit.', () => {
-      const workspace = WorkspaceImp.makeNew(new State(5));
+      const workspace = WorkspaceImp.makeNew(new TestState(5));
       const commit = new CommandCommit(workspace.head.hash, new SetCommand(6));
 
       expect(() =>
@@ -45,15 +47,15 @@ describe('WorkspaceImp', () => {
     });
 
     it('Throws an error for missing parent commit.', () => {
-      const workspace = WorkspaceImp.makeNew(new State(5));
+      const workspace = WorkspaceImp.makeNew(new TestState(5));
       const commit = new CommandCommit('123', new SetCommand(6));
 
       expect(() => workspace.addCommit(commit)).toThrowError();
     });
 
     it('Throws an error for duplicate initial commit.', () => {
-      const workspace = WorkspaceImp.makeNew(new State(5));
-      const commit = new InitialCommit(new State(6));
+      const workspace = WorkspaceImp.makeNew(new TestState(5));
+      const commit = new InitialCommit(new TestState(6));
 
       expect(() => workspace.addCommit(commit)).toThrowError();
     });
@@ -61,7 +63,7 @@ describe('WorkspaceImp', () => {
 
   describe('setBranches', () => {
     it('Throws an error for commit missing.', () => {
-      const workspace = WorkspaceImp.makeNew(new State(5));
+      const workspace = WorkspaceImp.makeNew(new TestState(5));
 
       expect(() =>
         workspace.setBranches(
@@ -72,12 +74,12 @@ describe('WorkspaceImp', () => {
   });
 
   it('Handles merge commits correctly.', () => {
-    const w = WorkspaceImp.makeNew(new State(5));
+    const w = WorkspaceImp.makeNew(new TestState(5));
     const c1 = new CommandCommit(w.head.hash, new SetCommand(6));
     const c2 = new CommandCommit(w.head.hash, new SetCommand(7));
 
-    const m1 = new MergeCommit<State>(c1.hash, c2.hash, c1.hash);
-    const m2 = new MergeCommit<State>(c1.hash, c2.hash, c2.hash);
+    const m1 = new MergeCommit<TestState>(c1.hash, c2.hash, c1.hash);
+    const m2 = new MergeCommit<TestState>(c1.hash, c2.hash, c2.hash);
 
     const w1 = w
       .addCommit(c1)
@@ -97,59 +99,56 @@ describe('WorkspaceImp', () => {
     expect(w1.getState(w1.head.hash).value).toBe(6);
     expect(w2.getState(w2.head.hash).value).toBe(7);
   });
+
+  describe('equals', () => {
+    let initialLocal: LocalBranch;
+
+    let empty: Workspace<TestState>;
+    let ws: Workspace<TestState>;
+    let commit: Commit<TestState>;
+
+    beforeEach(() => {
+      empty = WorkspaceImp.makeNew(new TestState(5));
+
+      initialLocal = empty.branches.getLocalBranch(MAIN_BRANCH);
+
+      commit = new CommandCommit(initialLocal.head, new SetCommand(6));
+
+      ws = empty
+        .addCommit(commit)
+        .setBranches(
+          empty.branches.updateBranch(makeLocalBranch(MAIN_BRANCH, commit.hash))
+        );
+    });
+
+    it('Returns true for equal.', () => {
+      const other = empty
+        .addCommit(commit)
+        .setBranches(
+          empty.branches.updateBranch(makeLocalBranch(MAIN_BRANCH, commit.hash))
+        );
+
+      expect(ws.equals(other)).toBe(true);
+    });
+
+    it('Returns false for different commits but same branches.', () => {
+      const ws1 = empty.addCommit(commit);
+
+      const ws2 = empty.addCommit(
+        new CommandCommit(initialLocal.head, new SetCommand(7))
+      );
+
+      expect(ws1.equals(ws2)).toBe(false);
+    });
+
+    it('Returns false for different branches but same commits.', () => {
+      const other = ws.setBranches(ws.branches.updateBranch(initialLocal));
+
+      expect(ws.equals(other)).toBe(false);
+    });
+
+    it('Returns false for different types.', () => {
+      expect(ws.equals({})).toBe(false);
+    });
+  });
 });
-
-class State implements Memento, Equalable {
-  private readonly _value: number;
-
-  public constructor(value: number) {
-    this._value = value;
-  }
-
-  public get value(): number {
-    return this._value;
-  }
-
-  public getSnapshot(): StateSnapshot {
-    return {
-      value: this.value,
-    };
-  }
-
-  public equals(other: unknown) {
-    if (other instanceof State) {
-      return this.value === other.value;
-    } else {
-      return false;
-    }
-  }
-}
-
-class SetCommand implements Command<State> {
-  private readonly _value: number;
-
-  constructor(value: number) {
-    this._value = value;
-  }
-
-  public apply(): State {
-    return new State(this._value);
-  }
-
-  public getSnapshot(): SetCommandSnapshot {
-    return {
-      type: 'SetCommand',
-      value: this._value,
-    };
-  }
-}
-
-interface SetCommandSnapshot extends Snapshot {
-  type: 'SetCommand';
-
-  value: number;
-}
-
-interface StateSnapshot extends Snapshot {
-  value: number;
-}

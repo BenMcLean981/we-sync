@@ -36,6 +36,10 @@ export function getAllPreviousCommits<TState>(
   hash: string,
   stop?: string
 ): Set<string> {
+  if (hash === stop) {
+    return new Set();
+  }
+
   const visited = new Set<string>();
   const toVisit = [hash];
 

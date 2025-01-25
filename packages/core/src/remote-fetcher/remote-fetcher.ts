@@ -1,4 +1,5 @@
 import { type Commit } from '../commit/commit.js';
+import { type Branch } from '../branches/index.js';
 
 export interface RemoteFetcher<TState> {
   /**
@@ -17,4 +18,6 @@ export interface RemoteFetcher<TState> {
     branchName: string,
     head: string
   ): Promise<void>;
+
+  getBranch(branchName: string): Promise<Branch | undefined>;
 }

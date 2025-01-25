@@ -1,4 +1,5 @@
 import {
+  areBranchesEqual,
   type Branch,
   type Branches,
   isLocalBranch,
@@ -6,8 +7,10 @@ import {
   type LocalBranch,
   type RemoteBranch,
 } from './branches.js';
+import { type Equalable } from '../equality/index.js';
+import { haveSameItems } from '../equality/have-same-items.js';
 
-export class BranchesImp implements Branches {
+export class BranchesImp implements Branches, Equalable {
   private readonly _locals: Record<string, LocalBranch>;
 
   private readonly _remotes: Record<string, RemoteBranch>;
@@ -89,6 +92,26 @@ export class BranchesImp implements Branches {
       return this.updateLocalBranch(branch);
     } else {
       return this.updateRemoteBranch(branch);
+    }
+  }
+
+  public equals(other: unknown): boolean {
+    if (other instanceof BranchesImp) {
+      const sameLocals = haveSameItems(
+        Object.values(this._locals),
+        Object.values(other._locals),
+        areBranchesEqual
+      );
+
+      const sameRemotes = haveSameItems(
+        Object.values(this._remotes),
+        Object.values(other._remotes),
+        areBranchesEqual
+      );
+
+      return sameLocals && sameRemotes;
+    } else {
+      return false;
     }
   }
 

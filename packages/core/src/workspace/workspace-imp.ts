@@ -8,6 +8,7 @@ import {
   BranchesImp,
   makeLocalBranch,
 } from '../branches/index.js';
+import { haveSameItems } from '../equality/have-same-items.js';
 
 export const MAIN_BRANCH = 'main';
 
@@ -34,10 +35,6 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
 
   public get branches(): Branches {
     return this._branches;
-  }
-
-  public get head(): Commit<TState> {
-    return this.getCommit(this._branches.getLocalBranch(MAIN_BRANCH).head);
   }
 
   public static makeNew<TState extends Memento>(
@@ -86,7 +83,10 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
       throw new Error('Commit already in workspace.');
     }
 
-    if (commit.parents.size === 0) {
+    const hasCommits = Object.keys(this._commits).length !== 0;
+    const isInitialCommit = commit.parents.size === 0;
+
+    if (isInitialCommit && hasCommits) {
       throw new Error('Cannot add dangling commit.');
     }
 
@@ -149,7 +149,17 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
     return commit.apply(parents);
   }
 
-  public equals(other: unknown, tol?: number): boolean {
-    throw new Error('Method not implemented.');
+  public equals(other: unknown): boolean {
+    if (other instanceof WorkspaceImp) {
+      return (
+        haveSameItems(
+          Object.values(this._commits),
+          Object.values(other._commits),
+          (c1, c2) => c1.hash === c2.hash
+        ) && this._branches.equals(other._branches)
+      );
+    } else {
+      return false;
+    }
   }
 }

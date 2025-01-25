@@ -1,4 +1,6 @@
-export interface Branches {
+import { type Equalable } from '../equality/index.js';
+
+export interface Branches extends Equalable {
   getAll(): ReadonlyArray<Branch>;
 
   getLocalBranch(name: string): LocalBranch;
@@ -56,4 +58,8 @@ export function isLocalBranch(branch: Branch): branch is LocalBranch {
 
 export function isRemoteBranch(branch: Branch): branch is RemoteBranch {
   return branch.type === 'Remote';
+}
+
+export function areBranchesEqual(b1: Branch, b2: Branch): boolean {
+  return b1.name === b2.name && b1.type === b2.type && b1.head === b2.head;
 }

@@ -1,20 +1,25 @@
 import { type RemoteFetcher } from './remote-fetcher.js';
 import { type Commit } from '../commit/index.js';
 import {
+  type Branch,
   makeLocalBranch,
   type Workspace,
   WorkspaceImp,
 } from '../workspace/index.js';
-import { getAllPreviousCommits } from 'src/sync/differences.js';
+import { getAllPreviousCommits } from '../sync/differences.js';
 import { type Memento } from '../memento/index.js';
 
 export class WorkspaceBasedRemoteFetcher<TState extends Memento>
   implements RemoteFetcher<TState>
 {
-  private _workspace: Workspace<TState>;
-
   public constructor(workspace: Workspace<TState> = WorkspaceImp.makeEmpty()) {
     this._workspace = workspace;
+  }
+
+  private _workspace: Workspace<TState>;
+
+  public get workspace(): Workspace<TState> {
+    return this._workspace;
   }
 
   public async fetch(
@@ -34,13 +39,45 @@ export class WorkspaceBasedRemoteFetcher<TState extends Memento>
   public async push(
     commits: ReadonlyArray<Commit<TState>>,
     branchName: string,
-    head: string
+    newHead: string
   ): Promise<void> {
-    // TODO: Check for conflict...
+    this.validatePush(commits, branchName, newHead);
 
     this._workspace = this._workspace.addCommits(commits);
 
-    this.createBranchIfNotExists(branchName, head);
+    this.createBranchIfNotExists(branchName, newHead);
+  }
+
+  public async getBranch(branchName: string): Promise<Branch | undefined> {
+    if (!this._workspace.branches.containsLocalBranch(branchName)) {
+      return undefined;
+    } else {
+      return this._workspace.branches.getLocalBranch(branchName);
+    }
+  }
+
+  private validatePush(
+    commits: ReadonlyArray<Commit<TState>>,
+    branchName: string,
+    newHead: string
+  ) {
+    const withAddition = this._workspace.addCommits(commits);
+    const toRoot = getAllPreviousCommits(withAddition, newHead);
+
+    const missingBranch =
+      this._workspace.branches.containsLocalBranch(branchName);
+
+    if (!missingBranch) {
+      return;
+    }
+
+    const oldHead = this._workspace.branches.getLocalBranch(branchName).head;
+
+    const isDescendent = toRoot.has(oldHead);
+
+    if (!isDescendent) {
+      throw new Error('Cannot push, local is missing commits from upstream.');
+    }
   }
 
   private createBranchIfNotExists(branchName: string, head: string): void {
