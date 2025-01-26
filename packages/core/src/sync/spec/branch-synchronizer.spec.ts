@@ -25,4 +25,12 @@ describe('fetchAndSynchronizeBranch', () => {
 
     await fetchAndSynchronizeBranch(ws, fetcher, MAIN_BRANCH);
   });
+
+  it.todo('Does nothing when there is no difference.');
+
+  it.todo('Pushes missing commits when local ahead.');
+
+  it.todo('Pulls missing commits when remote ahead.');
+
+  it.todo('Returns a merge conflict.');
 });

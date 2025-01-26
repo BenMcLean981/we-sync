@@ -1,6 +1,7 @@
 import { type Commit } from './commit.js';
 import { type Memento } from '../memento/index.js';
 import sha1 from 'sha1';
+import { type Workspace } from '../workspace/index.js';
 
 export class MergeCommit<TState extends Memento> implements Commit<TState> {
   private readonly _hash: string;
@@ -11,6 +12,13 @@ export class MergeCommit<TState extends Memento> implements Commit<TState> {
 
   private readonly _selection: string;
 
+  /**
+   * Creates a new MergeCommit.
+   *
+   * @param target The branch being merged onto.
+   * @param source The branch being merged in.
+   * @param selection The branch to keep.
+   */
   public constructor(target: string, source: string, selection: string) {
     MergeCommit.validate(target, source, selection);
 
@@ -45,11 +53,11 @@ export class MergeCommit<TState extends Memento> implements Commit<TState> {
     }
   }
 
-  public apply(parents: Record<string, TState>): TState {
-    if (!(this._selection in parents)) {
-      throw new Error('Parent not provided.');
-    }
+  public apply(context: Workspace<TState>): TState {
+    return context.getState(this._selection);
+  }
 
-    return parents[this._selection];
+  public revert(context: Workspace<TState>): TState {
+    return context.getState(this._target);
   }
 }

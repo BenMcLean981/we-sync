@@ -27,4 +27,8 @@ export class InitialCommit<TState extends Memento> implements Commit<TState> {
   public apply(): TState {
     return this._state;
   }
+
+  public revert(): TState {
+    throw new Error('Cannot revert initial commit.');
+  }
 }

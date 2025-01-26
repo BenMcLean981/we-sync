@@ -35,4 +35,7 @@ export class WorkspaceManipulator<TState extends Memento> {
 
     return new WorkspaceManipulator<TState>(ws);
   }
+
+  // TODO: Undo
+  // TODO: Redo
 }

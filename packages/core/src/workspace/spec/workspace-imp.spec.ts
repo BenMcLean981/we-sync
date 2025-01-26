@@ -12,38 +12,34 @@ import { type Workspace } from '../workspace.js';
 
 describe('WorkspaceImp', () => {
   it('Initializes to an empty state with a name.', () => {
-    const workspace = WorkspaceImp.makeNew<TestState>(new TestState(5));
+    const w = WorkspaceImp.makeNew<TestState>(new TestState(5));
 
-    const state = workspace.getState(workspace.head.hash);
+    const state = w.getState(getHeadHash(w));
 
     expect(state.value).toBe(5);
   });
 
   it('Allows the state to have commands applied.', () => {
-    let workspace = WorkspaceImp.makeNew(new TestState(5));
-    const commit = new CommandCommit(workspace.head.hash, new SetCommand(6));
+    let w = WorkspaceImp.makeNew(new TestState(5));
+    const commit = new CommandCommit(getHeadHash(w), new SetCommand(6));
 
-    workspace = workspace
+    w = w
       .addCommit(commit)
       .setBranches(
-        workspace.branches.updateBranch(
-          makeLocalBranch(MAIN_BRANCH, commit.hash)
-        )
+        w.branches.updateBranch(makeLocalBranch(MAIN_BRANCH, commit.hash))
       );
 
-    const state = workspace.getState(workspace.head.hash);
+    const state = w.getState(getHeadHash(w));
 
     expect(state.value).toBe(6);
   });
 
   describe('addCommit', () => {
     it('Throws an error for duplicate commit.', () => {
-      const workspace = WorkspaceImp.makeNew(new TestState(5));
-      const commit = new CommandCommit(workspace.head.hash, new SetCommand(6));
+      const w = WorkspaceImp.makeNew(new TestState(5));
+      const commit = new CommandCommit(getHeadHash(w), new SetCommand(6));
 
-      expect(() =>
-        workspace.addCommit(commit).addCommit(commit)
-      ).toThrowError();
+      expect(() => w.addCommit(commit).addCommit(commit)).toThrowError();
     });
 
     it('Throws an error for missing parent commit.', () => {
@@ -75,8 +71,9 @@ describe('WorkspaceImp', () => {
 
   it('Handles merge commits correctly.', () => {
     const w = WorkspaceImp.makeNew(new TestState(5));
-    const c1 = new CommandCommit(w.head.hash, new SetCommand(6));
-    const c2 = new CommandCommit(w.head.hash, new SetCommand(7));
+
+    const c1 = new CommandCommit(getHeadHash(w), new SetCommand(6));
+    const c2 = new CommandCommit(getHeadHash(w), new SetCommand(7));
 
     const m1 = new MergeCommit<TestState>(c1.hash, c2.hash, c1.hash);
     const m2 = new MergeCommit<TestState>(c1.hash, c2.hash, c2.hash);
@@ -96,8 +93,8 @@ describe('WorkspaceImp', () => {
         w.branches.updateBranch(makeLocalBranch(MAIN_BRANCH, m2.hash))
       );
 
-    expect(w1.getState(w1.head.hash).value).toBe(6);
-    expect(w2.getState(w2.head.hash).value).toBe(7);
+    expect(w1.getState(getHeadHash(w1)).value).toBe(6);
+    expect(w2.getState(getHeadHash(w2)).value).toBe(7);
   });
 
   describe('equals', () => {
@@ -152,3 +149,7 @@ describe('WorkspaceImp', () => {
     });
   });
 });
+
+function getHeadHash(workspace: Workspace<unknown>) {
+  return workspace.branches.getLocalBranch(MAIN_BRANCH).head;
+}

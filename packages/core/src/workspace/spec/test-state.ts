@@ -56,3 +56,9 @@ interface SetCommandSnapshot extends Snapshot {
 interface StateSnapshot extends Snapshot {
   value: number;
 }
+
+// TODO: Extract into module so consumers can run their own tests.
+// TODO: Add command.
+// TODO: Subtract command.
+// TODO: Multiply command.
+// TODO: Divide command.

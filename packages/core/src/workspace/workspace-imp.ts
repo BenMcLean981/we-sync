@@ -120,33 +120,10 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
     return new WorkspaceImp(this._commits, branches, this._id);
   }
 
-  /**
-   * @deprecated use setBranches.
-   *
-   * @param hash
-   */
-  public setHead(hash: string): Workspace<TState> {
-    if (!(hash in this._commits)) {
-      throw new Error('Commit not in workspace.');
-    }
-
-    return new WorkspaceImp(
-      this._commits,
-      this._branches.updateBranch(makeLocalBranch(MAIN_BRANCH, hash)),
-      this._id
-    );
-  }
-
   public getState(hash: string): TState {
     const commit = this.getCommit(hash);
 
-    const parents: Record<string, TState> = {};
-
-    for (const parentHash of commit.parents) {
-      parents[parentHash] = this.getState(parentHash);
-    }
-
-    return commit.apply(parents);
+    return commit.apply(this);
   }
 
   public equals(other: unknown): boolean {

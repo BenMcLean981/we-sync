@@ -1,25 +1,23 @@
 import { type Commit } from './commit.js';
-import { type Memento } from '../memento/index.js';
 import sha1 from 'sha1';
-import { type Command } from '../command/index.js';
 import { type Workspace } from '../workspace/index.js';
 
-export class CommandCommit<TState extends Memento> implements Commit<TState> {
+export class RevertCommit<TState> implements Commit<TState> {
   private readonly _hash: string;
 
   private readonly _parent: string;
 
-  private readonly _command: Command<TState>;
+  private readonly _target: string;
 
-  public constructor(parent: string, command: Command<TState>) {
+  public constructor(parent: string, target: string) {
     this._hash = sha1(
       JSON.stringify({
         parent,
-        command: command.getSnapshot(),
+        target,
       })
     );
     this._parent = parent;
-    this._command = command;
+    this._target = target;
   }
 
   public get hash(): string {
@@ -31,12 +29,18 @@ export class CommandCommit<TState extends Memento> implements Commit<TState> {
   }
 
   public apply(context: Workspace<TState>): TState {
-    const state = context.getState(this._parent);
+    const target = context.getCommit(this._target);
 
-    return this._command.apply(state);
+    const targetsParents: Record<string, TState> = {};
+
+    for (const parentHash of target.parents) {
+      targetsParents[parentHash] = context.getState(parentHash);
+    }
+
+    return target.revert(targetsParents, context);
   }
 
   public revert(context: Workspace<TState>): TState {
-    return context.getState(this._parent);
+    return context.getState(this._target);
   }
 }
