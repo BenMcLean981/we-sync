@@ -1,8 +1,9 @@
-import { type Workspace } from '../workspace/index.js';
+import { MAIN_BRANCH, type Workspace } from '../workspace/index.js';
 import { type RemoteFetcher } from '../remote-fetcher/index.js';
 import { makeLocalBranch, makeRemoteBranch } from '../branches/index.js';
 import { type Differences, getDifferences } from './differences.js';
 import { getAllPreviousCommitsHashes } from '../workspace/navigation.js';
+import { haveSameItems } from '../utils/index.js';
 
 export type Conflict<TState> = {
   local: TState;
@@ -13,19 +14,32 @@ export type SynchronizationResult<TState> =
   | Workspace<TState>
   | Conflict<TState>;
 
+export function isMerged<TState>(
+  result: SynchronizationResult<TState>
+): result is Workspace<TState> {
+  return !isConflict(result);
+}
+
+export function isConflict<TState>(
+  result: SynchronizationResult<TState>
+): result is Conflict<TState> {
+  const conflictKeys = new Set<keyof Conflict<TState>>(['local', 'remote']);
+
+  return haveSameItems(Object.keys(result), conflictKeys);
+}
+
 export async function fetchAndSynchronizeBranch<TState>(
   workspace: Workspace<TState>,
   fetcher: RemoteFetcher<TState>,
-  branchName: string
+  branchName = MAIN_BRANCH
 ): Promise<SynchronizationResult<TState>> {
-  const refsUpdated = await updateRemoteHead(workspace, fetcher, branchName);
+  const refsUpdated = await fetch(workspace, fetcher, branchName);
   const ready = await ensureBranchesCreated(refsUpdated, fetcher, branchName);
-  const fetched = await fetch(ready, branchName, fetcher);
 
-  return synchronizeBranch(fetched, fetcher, branchName);
+  return synchronizeBranch(ready, fetcher, branchName);
 }
 
-async function updateRemoteHead<TState>(
+async function fetch<TState>(
   workspace: Workspace<TState>,
   fetcher: RemoteFetcher<TState>,
   branchName: string
@@ -35,11 +49,25 @@ async function updateRemoteHead<TState>(
   if (remoteBranch === undefined) {
     return workspace;
   } else {
-    const newBranches = workspace.branches.updateBranch(
+    const latestHash = getHashToFetchFrom(workspace, branchName);
+    const remoteAfter = await fetcher.fetch(branchName, latestHash);
+
+    const newBranches = workspace.branches.upsertBranch(
       makeRemoteBranch(branchName, remoteBranch.head)
     );
 
-    return workspace.setBranches(newBranches);
+    return workspace.addCommits(remoteAfter).setBranches(newBranches);
+  }
+}
+
+function getHashToFetchFrom(
+  workspace: Workspace<unknown>,
+  branchName: string
+): string {
+  if (workspace.branches.containsRemoteBranch(branchName)) {
+    return workspace.branches.getRemoteBranch(branchName).head;
+  } else {
+    return workspace.branches.getLocalBranch(branchName).head;
   }
 }
 
@@ -65,18 +93,6 @@ async function ensureBranchesCreated<TState>(
   } else {
     return workspace;
   }
-}
-
-async function fetch<TState>(
-  workspace: Workspace<TState>,
-  branchName: string,
-  fetcher: RemoteFetcher<TState>
-) {
-  const local = workspace.branches.getLocalBranch(branchName);
-
-  const remoteAfter = await fetcher.fetch(branchName, local.head);
-
-  return workspace.addCommits(remoteAfter);
 }
 
 async function synchronizeBranch<TState>(

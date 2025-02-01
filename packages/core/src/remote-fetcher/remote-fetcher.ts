@@ -16,7 +16,7 @@ export interface RemoteFetcher<TState> {
   push(
     commits: ReadonlyArray<Commit<TState>>,
     branchName: string,
-    head: string
+    newHead: string
   ): Promise<void>;
 
   getBranch(branchName: string): Promise<Branch | undefined>;

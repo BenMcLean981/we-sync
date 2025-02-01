@@ -24,13 +24,17 @@ export class WorkspaceBasedRemoteFetcher<TState extends Memento>
 
   public async fetch(
     branchName: string,
-    hash: string
+    from: string
   ): Promise<ReadonlyArray<Commit<TState>>> {
+    if (!this._workspace.hasCommit(from)) {
+      return [];
+    }
+
     const local = this._workspace.branches.getLocalBranch(branchName);
     const hashes = getAllPreviousCommitsHashes<TState>(
       this._workspace,
       local.head,
-      hash
+      (c) => c.hash === from
     );
 
     return [...hashes].map((h) => this._workspace.getCommit(h));
@@ -43,9 +47,13 @@ export class WorkspaceBasedRemoteFetcher<TState extends Memento>
   ): Promise<void> {
     this.validatePush(commits, branchName, newHead);
 
-    this._workspace = this._workspace.addCommits(commits);
+    const newBranches = this._workspace.branches.upsertBranch(
+      makeLocalBranch(branchName, newHead)
+    );
 
-    this.createBranchIfNotExists(branchName, newHead);
+    this._workspace = this._workspace
+      .addCommits(commits)
+      .setBranches(newBranches);
   }
 
   public async getBranch(branchName: string): Promise<Branch | undefined> {
@@ -77,16 +85,6 @@ export class WorkspaceBasedRemoteFetcher<TState extends Memento>
 
     if (!isDescendent) {
       throw new Error('Cannot push, local is missing commits from upstream.');
-    }
-  }
-
-  private createBranchIfNotExists(branchName: string, head: string): void {
-    if (!this._workspace.branches.containsLocalBranch(branchName)) {
-      const newBranches = this._workspace.branches.addBranch(
-        makeLocalBranch(branchName, head)
-      );
-
-      this._workspace = this._workspace.setBranches(newBranches);
     }
   }
 }
