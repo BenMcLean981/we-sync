@@ -43,6 +43,10 @@ export class WorkspaceManipulator<TState extends Memento> {
     return new WorkspaceManipulator<TState>(ws);
   }
 
+  public canUndo(branchName = MAIN_BRANCH): boolean {
+    return this.tryFindingCommitToUndo(branchName) !== undefined;
+  }
+
   public undo(branchName = MAIN_BRANCH): WorkspaceManipulator<TState> {
     const head = getHeadHash(this._workspace, branchName);
 
@@ -50,6 +54,10 @@ export class WorkspaceManipulator<TState extends Memento> {
     const revert = new RevertCommit<TState>(head, commitToUndo.hash);
 
     return this.commit(revert);
+  }
+
+  public canRedo(branchName = MAIN_BRANCH): boolean {
+    return this.tryFindingCommitToRedo(branchName) !== undefined;
   }
 
   public redo(branchName = MAIN_BRANCH): WorkspaceManipulator<TState> {
@@ -62,17 +70,23 @@ export class WorkspaceManipulator<TState extends Memento> {
   }
 
   private findCommitToUndo(branchName: string): Commit<TState> {
-    const chain = getAllPrimaryPreviousCommits(
-      this._workspace,
-      getHeadHash(this._workspace, branchName)
-    );
-
-    const commitToUndo = chain.find((c) => this.isUndoable(c, chain));
+    const commitToUndo = this.tryFindingCommitToUndo(branchName);
     if (commitToUndo === undefined) {
       throw new Error('No commits to undo.');
     }
 
     return commitToUndo;
+  }
+
+  private tryFindingCommitToUndo(
+    branchName: string
+  ): Commit<TState> | undefined {
+    const chain = getAllPrimaryPreviousCommits(
+      this._workspace,
+      getHeadHash(this._workspace, branchName)
+    );
+
+    return chain.find((c) => this.isUndoable(c, chain));
   }
 
   private isUndoable(
@@ -87,20 +101,25 @@ export class WorkspaceManipulator<TState extends Memento> {
   }
 
   private findCommitToRedo(branchName: string): Commit<TState> {
+    const commitToRedo = this.tryFindingCommitToRedo(branchName);
+
+    if (commitToRedo === undefined) {
+      throw new Error('No commits to redo.');
+    }
+
+    return commitToRedo;
+  }
+
+  private tryFindingCommitToRedo(branchName: string) {
     const commits = getAllPrimaryPreviousCommits(
       this._workspace,
       getHeadHash(this._workspace, branchName),
       (c) => !(c instanceof RevertCommit)
     );
 
-    const commitToRedo = commits.find(
+    return commits.find(
       (c) => c instanceof RevertCommit && this.isUndo(c, commits)
     );
-    if (commitToRedo === undefined) {
-      throw new Error('No commits to redo.');
-    }
-
-    return commitToRedo;
   }
 
   private isUndo(commit: Commit<TState>, chain: ReadonlyArray<Commit<TState>>) {

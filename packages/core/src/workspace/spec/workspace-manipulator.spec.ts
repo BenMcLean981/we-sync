@@ -166,4 +166,24 @@ describe('WorkspaceManipulator', () => {
       expect(() => manipulator.redo()).toThrowError();
     });
   });
+
+  describe('canUndo', () => {
+    it('Returns true for able to undo.', () => {
+      expect(manipulator.canUndo()).toBe(true);
+    });
+
+    it('Returns true for not able to undo.', () => {
+      expect(manipulator.undo().undo().canUndo()).toBe(false);
+    });
+  });
+
+  describe('canRedo', () => {
+    it('Returns true for able to redo.', () => {
+      expect(manipulator.undo().canRedo()).toBe(true);
+    });
+
+    it('Returns true for not able to redo.', () => {
+      expect(manipulator.canRedo()).toBe(false);
+    });
+  });
 });
