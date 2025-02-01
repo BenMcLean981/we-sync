@@ -28,6 +28,10 @@ export class RevertCommit<TState> implements Commit<TState> {
     return new Set([this._parent]);
   }
 
+  public get primaryParent(): string {
+    return this._parent;
+  }
+
   public get target(): string {
     return this._target;
   }
@@ -35,13 +39,7 @@ export class RevertCommit<TState> implements Commit<TState> {
   public apply(context: Workspace<TState>): TState {
     const target = context.getCommit(this._target);
 
-    const targetsParents: Record<string, TState> = {};
-
-    for (const parentHash of target.parents) {
-      targetsParents[parentHash] = context.getState(parentHash);
-    }
-
-    return target.revert(targetsParents, context);
+    return target.revert(context);
   }
 
   public revert(context: Workspace<TState>): TState {

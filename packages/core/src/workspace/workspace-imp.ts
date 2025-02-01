@@ -8,7 +8,7 @@ import {
   BranchesImp,
   makeLocalBranch,
 } from '../branches/index.js';
-import { haveSameItems } from '../equality/have-same-items.js';
+import { haveSameItems } from '../utils/index.js';
 
 export const MAIN_BRANCH = 'main';
 
@@ -141,10 +141,16 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
   }
 }
 
-export function getHead<TState>(workspace: Workspace<TState>): Commit<TState> {
-  return workspace.getCommit(getHeadHash(workspace));
+export function getHead<TState>(
+  workspace: Workspace<TState>,
+  branchName = MAIN_BRANCH
+): Commit<TState> {
+  return workspace.getCommit(getHeadHash(workspace, branchName));
 }
 
-export function getHeadHash(workspace: Workspace<unknown>) {
-  return workspace.branches.getLocalBranch(MAIN_BRANCH).head;
+export function getHeadHash(
+  workspace: Workspace<unknown>,
+  branchName = MAIN_BRANCH
+) {
+  return workspace.branches.getLocalBranch(branchName).head;
 }

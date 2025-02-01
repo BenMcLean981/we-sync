@@ -43,6 +43,10 @@ export class MergeCommit<TState extends Memento> implements Commit<TState> {
     return new Set([this._target, this._source]);
   }
 
+  public get primaryParent(): string {
+    return this._target;
+  }
+
   private static validate(target: string, source: string, selection: string) {
     if (target === source) {
       throw new Error('Cannot merge target into source.');

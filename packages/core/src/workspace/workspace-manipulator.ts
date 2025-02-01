@@ -9,7 +9,8 @@ import { getHeadHash, MAIN_BRANCH } from './workspace-imp.js';
 import { makeLocalBranch } from '../branches/index.js';
 import { type Command } from '../command/index.js';
 import { type Memento } from '../memento/index.js';
-import { getAllPreviousCommitsHashes } from '../sync/differences.js';
+import { getAllPrimaryPreviousCommits } from './navigation.js';
+import { isOdd } from '../utils/index.js';
 
 export class WorkspaceManipulator<TState extends Memento> {
   private readonly _workspace: Workspace<TState>;
@@ -26,7 +27,7 @@ export class WorkspaceManipulator<TState extends Memento> {
     command: Command<TState>,
     branchName = MAIN_BRANCH
   ): WorkspaceManipulator<TState> {
-    const head = this._workspace.branches.getLocalBranch(branchName).head;
+    const head = getHeadHash(this._workspace, branchName);
 
     return this.commit(new CommandCommit(head, command), branchName);
   }
@@ -42,30 +43,28 @@ export class WorkspaceManipulator<TState extends Memento> {
     return new WorkspaceManipulator<TState>(ws);
   }
 
-  public undo(): WorkspaceManipulator {
-    const commitToUndo = this.findCommitToUndo();
-    const revert = new RevertCommit(
-      commitToUndo.hash,
-      this._workspace.head.hash
-    );
+  public undo(branchName = MAIN_BRANCH): WorkspaceManipulator<TState> {
+    const head = getHeadHash(this._workspace, branchName);
+
+    const commitToUndo = this.findCommitToUndo(branchName);
+    const revert = new RevertCommit<TState>(head, commitToUndo.hash);
 
     return this.commit(revert);
   }
 
-  public redo(): WorkspaceManipulator {
-    const commitToRedo = this.findCommitToRedo();
-    const revert = new RevertCommit(
-      commitToRedo.hash,
-      this._workspace.head.hash
-    );
+  public redo(branchName = MAIN_BRANCH): WorkspaceManipulator<TState> {
+    const commitToRedo = this.findCommitToRedo(branchName);
+
+    const head = getHeadHash(this._workspace, branchName);
+    const revert = new RevertCommit<TState>(head, commitToRedo.hash);
 
     return this.commit(revert);
   }
 
-  private findCommitToUndo(): Commit<TState> {
-    const chain = getAllPreviousCommitsHashes(
+  private findCommitToUndo(branchName: string): Commit<TState> {
+    const chain = getAllPrimaryPreviousCommits(
       this._workspace,
-      getHeadHash(this._workspace)
+      getHeadHash(this._workspace, branchName)
     );
 
     const commitToUndo = chain.find((c) => this.isUndoable(c, chain));
@@ -87,16 +86,15 @@ export class WorkspaceManipulator<TState extends Memento> {
     }
   }
 
-  private findCommitToRedo(): Commit<TState> {
-    const chain = getAllPreviousCommitsHashes(
+  private findCommitToRedo(branchName: string): Commit<TState> {
+    const commits = getAllPrimaryPreviousCommits(
       this._workspace,
-      getHeadHash(this._workspace)
+      getHeadHash(this._workspace, branchName),
+      (c) => !(c instanceof RevertCommit)
     );
 
-    const commits = takeWhile(chain, (c) => c instanceof RevertCommit);
-
     const commitToRedo = commits.find(
-      (c) => c instanceof RevertCommit && this.isUndo(c, chain)
+      (c) => c instanceof RevertCommit && this.isUndo(c, commits)
     );
     if (commitToRedo === undefined) {
       throw new Error('No commits to redo.');

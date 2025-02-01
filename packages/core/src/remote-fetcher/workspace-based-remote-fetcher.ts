@@ -6,8 +6,8 @@ import {
   type Workspace,
   WorkspaceImp,
 } from '../workspace/index.js';
-import { getAllPreviousCommitsHashes } from '../sync/differences.js';
 import { type Memento } from '../memento/index.js';
+import { getAllPreviousCommitsHashes } from '../workspace/navigation.js';
 
 export class WorkspaceBasedRemoteFetcher<TState extends Memento>
   implements RemoteFetcher<TState>

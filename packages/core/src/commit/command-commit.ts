@@ -30,6 +30,10 @@ export class CommandCommit<TState extends Memento> implements Commit<TState> {
     return new Set([this._parent]);
   }
 
+  public get primaryParent(): string {
+    return this._parent;
+  }
+
   public apply(context: Workspace<TState>): TState {
     const state = context.getState(this._parent);
 

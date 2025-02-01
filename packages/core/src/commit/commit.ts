@@ -1,14 +1,12 @@
 import type { Snapshot } from '../memento/snapshot.ts';
 import { type Workspace } from '../workspace/index.js';
 
-// TODO: Change commit to type union...
-
 export interface Commit<TState> {
   readonly hash: string;
 
   readonly parents: Set<string>;
 
-  // TODO: Remove parents.
+  readonly primaryParent: string | null;
 
   apply(context: Workspace<TState>): TState;
 

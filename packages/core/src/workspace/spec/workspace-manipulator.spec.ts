@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SetCommand, TestState } from './test-state.js';
-import {
-  getHead,
-  getHeadHash,
-  MAIN_BRANCH,
-  WorkspaceImp,
-} from '../workspace-imp.js';
+import { getHeadHash, MAIN_BRANCH, WorkspaceImp } from '../workspace-imp.js';
 import { CommandCommit, RevertCommit } from '../../commit/index.js';
 import { makeLocalBranch } from '../../branches/index.js';
 import { WorkspaceManipulator } from '../workspace-manipulator.js';
@@ -66,8 +61,8 @@ describe('WorkspaceManipulator', () => {
 
       const expectedRevert1 = new RevertCommit<TestState>(c2.hash, c2.hash);
       const expectedRevert2 = new RevertCommit<TestState>(
-        c1.hash,
-        expectedRevert1.hash
+        expectedRevert1.hash,
+        c1.hash
       );
       const expected = manipulator
         .commit(expectedRevert1)
@@ -122,24 +117,31 @@ describe('WorkspaceManipulator', () => {
       expect(redone.workspace.equals(ex.workspace)).toBe(true);
     });
 
-    it('Redoes two undos.', () => {
-      manipulator = manipulator.undo();
-      const u1 = getHead(manipulator.workspace);
+    it('Redoes two undo commits.', () => {
+      const redoneTwice = manipulator.undo().undo().redo().redo();
 
-      manipulator = manipulator.undo();
-
-      const redone = manipulator.redo();
-      const redoneTwice = redone.redo();
-
-      let ex = manipulator.commit(
-        new RevertCommit(
-          getHeadHash(manipulator.workspace),
-          getHeadHash(manipulator.workspace)
-        )
+      const expectedUndo1 = new RevertCommit<TestState>(c2.hash, c2.hash);
+      const expectedUndo2 = new RevertCommit<TestState>(
+        expectedUndo1.hash,
+        c1.hash
       );
-      ex = ex.commit(new RevertCommit(u1.hash, getHeadHash(ex.workspace)));
 
-      expect(redoneTwice.workspace.equals(ex.workspace)).toBe(true);
+      const expectedRedo1 = new RevertCommit<TestState>(
+        expectedUndo2.hash,
+        expectedUndo2.hash
+      );
+      const expectedRedo2 = new RevertCommit<TestState>(
+        expectedRedo1.hash,
+        expectedUndo1.hash
+      );
+
+      const expected = manipulator
+        .commit(expectedUndo1)
+        .commit(expectedUndo2)
+        .commit(expectedRedo1)
+        .commit(expectedRedo2).workspace;
+
+      expect(redoneTwice.workspace.equals(expected)).toBe(true);
     });
 
     it('Throws an error when there is nothing left to redo.', () => {

@@ -6,8 +6,8 @@ import {
 } from '../../workspace/index.js';
 import { SetCommand, TestState } from '../../workspace/spec/test-state.js';
 import { WorkspaceManipulator } from '../../workspace/workspace-manipulator.js';
-import { getAllPreviousCommitsHashes } from '../differences.js';
-import { haveSameItems } from '../../equality/have-same-items.js';
+import { haveSameItems } from '../../utils/iterable-checks.js';
+import { getAllPreviousCommitsHashes } from '../../workspace/navigation.js';
 
 describe('getAllPreviousCommits', () => {
   let initial: Workspace<TestState>;

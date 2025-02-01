@@ -8,7 +8,7 @@ import {
   type RemoteBranch,
 } from './branches.js';
 import { type Equalable } from '../equality/index.js';
-import { haveSameItems } from '../equality/have-same-items.js';
+import { haveSameItems } from '../utils/iterable-checks.js';
 
 export class BranchesImp implements Branches, Equalable {
   private readonly _locals: Record<string, LocalBranch>;
