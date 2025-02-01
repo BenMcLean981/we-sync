@@ -12,6 +12,8 @@ import { type Memento } from '../memento/index.js';
 import { getAllPrimaryPreviousCommits } from './navigation.js';
 import { isOdd } from '../utils/index.js';
 
+// TODO: Stop iterating commits iterable for performance.
+
 export class WorkspaceManipulator<TState extends Memento> {
   private readonly _workspace: Workspace<TState>;
 
@@ -91,7 +93,7 @@ export class WorkspaceManipulator<TState extends Memento> {
 
   private isUndoable(
     c: Commit<TState>,
-    chain: ReadonlyArray<Commit<TState>>
+    chain: Iterable<Commit<TState>>
   ): boolean {
     if (c instanceof InitialCommit) {
       return false;
@@ -124,7 +126,7 @@ export class WorkspaceManipulator<TState extends Memento> {
     );
   }
 
-  private isUndo(commit: Commit<TState>, chain: ReadonlyArray<Commit<TState>>) {
+  private isUndo(commit: Commit<TState>, chain: Iterable<Commit<TState>>) {
     const target = this.getTarget(commit);
 
     return this.isUndone(target, chain);
@@ -142,7 +144,7 @@ export class WorkspaceManipulator<TState extends Memento> {
 
   private isUndone(
     target: Commit<TState>,
-    commits: ReadonlyArray<Commit<TState>>
+    commits: Iterable<Commit<TState>>
   ): boolean {
     const times = this.getTimesUndone(target, commits);
 
@@ -151,7 +153,7 @@ export class WorkspaceManipulator<TState extends Memento> {
 
   private getTimesUndone(
     target: Commit<TState>,
-    commits: ReadonlyArray<Commit<TState>>,
+    commits: Iterable<Commit<TState>>,
     times = 0
   ): number {
     const revert = this.findRevert(target, commits);
@@ -165,9 +167,9 @@ export class WorkspaceManipulator<TState extends Memento> {
 
   private findRevert(
     target: Commit<TState>,
-    commits: ReadonlyArray<Commit<TState>>
+    commits: Iterable<Commit<TState>>
   ): Commit<TState> | undefined {
-    return commits.find((c) => this.undoes(c, target));
+    return [...commits].find((c) => this.undoes(c, target));
   }
 
   /**

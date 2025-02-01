@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SetCommand, TestState } from './test-state.js';
+import { SetCommand, TestState } from '../../test-state/index.js';
 import { getHeadHash, MAIN_BRANCH, WorkspaceImp } from '../workspace-imp.js';
 import { CommandCommit, RevertCommit } from '../../commit/index.js';
 import { makeLocalBranch } from '../../branches/index.js';

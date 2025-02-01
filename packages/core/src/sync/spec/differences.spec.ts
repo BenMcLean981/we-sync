@@ -4,9 +4,9 @@ import {
   type Workspace,
   WorkspaceImp,
 } from '../../workspace/index.js';
-import { SetCommand, TestState } from '../../workspace/spec/test-state.js';
+import { SetCommand, TestState } from '../../test-state/index.js';
 import { WorkspaceManipulator } from '../../workspace/workspace-manipulator.js';
-import { haveSameItems } from '../../utils/iterable-checks.js';
+import { haveSameItems } from '../../utils/index.js';
 import { getAllPreviousCommitsHashes } from '../../workspace/navigation.js';
 
 describe('getAllPreviousCommits', () => {

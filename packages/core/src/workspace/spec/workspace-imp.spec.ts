@@ -6,7 +6,7 @@ import {
   MergeCommit,
 } from '../../commit/index.js';
 import { type LocalBranch, makeLocalBranch } from '../../branches/branches.js';
-import { SetCommand, TestState } from './test-state.js';
+import { SetCommand, TestState } from '../../test-state/index.js';
 import { beforeEach, describe, it } from 'vitest';
 import { type Workspace } from '../workspace.js';
 

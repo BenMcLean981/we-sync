@@ -4,7 +4,7 @@ import {
   MAIN_BRANCH,
   WorkspaceImp,
 } from '../../workspace/index.js';
-import { TestState } from '../../workspace/spec/test-state.js';
+import { TestState } from '../../test-state/index.js';
 import { WorkspaceBasedRemoteFetcher } from '../../remote-fetcher/workspace-based-remote-fetcher.js';
 
 describe('fetchAndSynchronizeBranch', () => {
