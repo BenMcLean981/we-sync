@@ -28,6 +28,10 @@ export class RevertCommit<TState> implements Commit<TState> {
     return new Set([this._parent]);
   }
 
+  public get target(): string {
+    return this._target;
+  }
+
   public apply(context: Workspace<TState>): TState {
     const target = context.getCommit(this._target);
 

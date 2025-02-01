@@ -140,3 +140,11 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
     }
   }
 }
+
+export function getHead<TState>(workspace: Workspace<TState>): Commit<TState> {
+  return workspace.getCommit(getHeadHash(workspace));
+}
+
+export function getHeadHash(workspace: Workspace<unknown>) {
+  return workspace.branches.getLocalBranch(MAIN_BRANCH).head;
+}

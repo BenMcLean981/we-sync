@@ -1,4 +1,4 @@
-import { MAIN_BRANCH, WorkspaceImp } from '../workspace-imp.js';
+import { getHeadHash, MAIN_BRANCH, WorkspaceImp } from '../workspace-imp.js';
 import {
   CommandCommit,
   type Commit,
@@ -149,7 +149,3 @@ describe('WorkspaceImp', () => {
     });
   });
 });
-
-function getHeadHash(workspace: Workspace<unknown>) {
-  return workspace.branches.getLocalBranch(MAIN_BRANCH).head;
-}

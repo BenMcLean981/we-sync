@@ -3,7 +3,7 @@ import { type RemoteFetcher } from '../remote-fetcher/index.js';
 import { makeLocalBranch, makeRemoteBranch } from '../branches/index.js';
 import {
   type Differences,
-  getAllPreviousCommits,
+  getAllPreviousCommitsHashes,
   getDifferences,
 } from './differences.js';
 
@@ -57,7 +57,7 @@ async function ensureBranchesCreated<TState>(
     throw new Error(`Missing local branch "${branchName}"`);
   } else if (!workspace.branches.containsRemoteBranch(branchName)) {
     const local = workspace.branches.getLocalBranch(branchName);
-    const hashes = getAllPreviousCommits(workspace, local.head);
+    const hashes = getAllPreviousCommitsHashes(workspace, local.head);
     const commits = [...hashes].map((h) => workspace.getCommit(h));
 
     await fetcher.push(commits, branchName, local.head);

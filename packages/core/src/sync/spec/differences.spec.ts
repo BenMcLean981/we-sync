@@ -6,7 +6,7 @@ import {
 } from '../../workspace/index.js';
 import { SetCommand, TestState } from '../../workspace/spec/test-state.js';
 import { WorkspaceManipulator } from '../../workspace/workspace-manipulator.js';
-import { getAllPreviousCommits } from '../differences.js';
+import { getAllPreviousCommitsHashes } from '../differences.js';
 import { haveSameItems } from '../../equality/have-same-items.js';
 
 describe('getAllPreviousCommits', () => {
@@ -28,7 +28,7 @@ describe('getAllPreviousCommits', () => {
     const c1 = ws.getCommit([...head.parents][0]);
     const c2 = ws.getCommit([...c1.parents][0]);
 
-    const actual = getAllPreviousCommits(ws, hash);
+    const actual = getAllPreviousCommitsHashes(ws, hash);
     const expected = new Set([head.hash, c1.hash, c2.hash]);
 
     expect(haveSameItems(actual, expected)).toBe(true);
@@ -40,7 +40,11 @@ describe('getAllPreviousCommits', () => {
     const c1 = ws.getCommit([...head.parents][0]);
     const c2 = ws.getCommit([...c1.parents][0]);
 
-    const actual = getAllPreviousCommits(ws, hash, c2.hash);
+    const actual = getAllPreviousCommitsHashes(
+      ws,
+      hash,
+      (c) => c.hash === c2.hash
+    );
     const expected = new Set([head.hash, c1.hash]);
 
     expect(haveSameItems(actual, expected)).toBe(true);
@@ -50,7 +54,11 @@ describe('getAllPreviousCommits', () => {
     const hash = ws.branches.getLocalBranch(MAIN_BRANCH).head;
     const head = ws.getCommit(hash);
 
-    const actual = getAllPreviousCommits(ws, hash, head.hash);
+    const actual = getAllPreviousCommitsHashes(
+      ws,
+      hash,
+      (c) => c.hash === head.hash
+    );
     const expected = new Set([]);
 
     expect(haveSameItems(actual, expected)).toBe(true);

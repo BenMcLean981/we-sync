@@ -6,7 +6,7 @@ import {
   type Workspace,
   WorkspaceImp,
 } from '../workspace/index.js';
-import { getAllPreviousCommits } from '../sync/differences.js';
+import { getAllPreviousCommitsHashes } from '../sync/differences.js';
 import { type Memento } from '../memento/index.js';
 
 export class WorkspaceBasedRemoteFetcher<TState extends Memento>
@@ -27,7 +27,7 @@ export class WorkspaceBasedRemoteFetcher<TState extends Memento>
     hash: string
   ): Promise<ReadonlyArray<Commit<TState>>> {
     const local = this._workspace.branches.getLocalBranch(branchName);
-    const hashes = getAllPreviousCommits<TState>(
+    const hashes = getAllPreviousCommitsHashes<TState>(
       this._workspace,
       local.head,
       hash
@@ -62,7 +62,7 @@ export class WorkspaceBasedRemoteFetcher<TState extends Memento>
     newHead: string
   ) {
     const withAddition = this._workspace.addCommits(commits);
-    const toRoot = getAllPreviousCommits(withAddition, newHead);
+    const toRoot = getAllPreviousCommitsHashes(withAddition, newHead);
 
     const missingBranch =
       this._workspace.branches.containsLocalBranch(branchName);

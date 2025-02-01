@@ -1,4 +1,5 @@
 import { type Workspace } from '../workspace/index.js';
+import { type Commit } from '../commit/index.js';
 
 export type Differences = {
   /**
@@ -19,8 +20,14 @@ export function getDifferences<TState>(
   const localBranch = workspace.branches.getLocalBranch(branchName);
   const remoteBranch = workspace.branches.getRemoteBranch(branchName);
 
-  const allLocalCommits = getAllPreviousCommits(workspace, localBranch.head);
-  const allRemoteCommits = getAllPreviousCommits(workspace, remoteBranch.head);
+  const allLocalCommits = getAllPreviousCommitsHashes(
+    workspace,
+    localBranch.head
+  );
+  const allRemoteCommits = getAllPreviousCommitsHashes(
+    workspace,
+    remoteBranch.head
+  );
 
   const localDifference = difference(allLocalCommits, allRemoteCommits);
   const remoteDifference = difference(allRemoteCommits, allLocalCommits);
@@ -31,12 +38,12 @@ export function getDifferences<TState>(
   };
 }
 
-export function getAllPreviousCommits<TState>(
+export function getAllPreviousCommitsHashes<TState>(
   workspace: Workspace<TState>,
   hash: string,
-  stop?: string
+  stop?: (c: Commit<TState>) => boolean
 ): Set<string> {
-  if (hash === stop) {
+  if (stop?.(workspace.getCommit(hash))) {
     return new Set();
   }
 
@@ -49,7 +56,7 @@ export function getAllPreviousCommits<TState>(
     const commit = workspace.getCommit(nextHash);
 
     [...commit.parents]
-      .filter((p) => !visited.has(p) && p !== stop)
+      .filter((p) => !visited.has(p) && !stop?.(workspace.getCommit(p)))
       .forEach((p) => {
         toVisit.push(p);
       });
