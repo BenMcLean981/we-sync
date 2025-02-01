@@ -36,7 +36,7 @@ export function getAllPrimaryPreviousCommits<TState>(
   workspace: Workspace<TState>,
   hash: string,
   stop?: (c: Commit<TState>) => boolean
-): ReadonlyArray<Commit<TState>> {
+): Iterable<Commit<TState>> {
   const hashes = getAllPrimaryPreviousCommitHashes(workspace, hash, stop);
 
   return hashes.map((h) => workspace.getCommit(h));

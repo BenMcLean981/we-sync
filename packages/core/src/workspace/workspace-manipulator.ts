@@ -86,7 +86,7 @@ export class WorkspaceManipulator<TState extends Memento> {
       getHeadHash(this._workspace, branchName)
     );
 
-    return chain.find((c) => this.isUndoable(c, chain));
+    return [...chain].find((c) => this.isUndoable(c, chain));
   }
 
   private isUndoable(
@@ -110,15 +110,17 @@ export class WorkspaceManipulator<TState extends Memento> {
     return commitToRedo;
   }
 
-  private tryFindingCommitToRedo(branchName: string) {
-    const commits = getAllPrimaryPreviousCommits(
+  private tryFindingCommitToRedo(
+    branchName: string
+  ): Commit<TState> | undefined {
+    const chain = getAllPrimaryPreviousCommits(
       this._workspace,
       getHeadHash(this._workspace, branchName),
       (c) => !(c instanceof RevertCommit)
     );
 
-    return commits.find(
-      (c) => c instanceof RevertCommit && this.isUndo(c, commits)
+    return [...chain].find(
+      (c) => c instanceof RevertCommit && this.isUndo(c, chain)
     );
   }
 
