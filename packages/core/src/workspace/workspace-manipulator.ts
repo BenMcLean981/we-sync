@@ -3,10 +3,11 @@ import {
   CommandCommit,
   type Commit,
   InitialCommit,
+  MergeCommit,
   RevertCommit,
 } from '../commit/index.js';
-import { getHeadHash, MAIN_BRANCH } from './workspace-imp.js';
-import { makeLocalBranch } from '../branches/index.js';
+import { getHeadHash } from './workspace-imp.js';
+import { MAIN_BRANCH, makeLocalBranch } from '../branches/index.js';
 import { type Command } from '../command/index.js';
 import { type Memento } from '../memento/index.js';
 import { getAllPrimaryPreviousCommits } from './navigation.js';
@@ -32,6 +33,35 @@ export class WorkspaceManipulator<TState extends Memento> {
     const head = getHeadHash(this._workspace, branchName);
 
     return this.commit(new CommandCommit(head, command), branchName);
+  }
+
+  /**
+   * Creates a merge with the target as the result.
+   */
+
+  public mergeTarget(
+    target: string,
+    branchName = MAIN_BRANCH
+  ): WorkspaceManipulator<TState> {
+    const head = getHeadHash(this._workspace, branchName);
+
+    const commit = new MergeCommit<TState>(target, head, target);
+
+    return this.commit(commit, branchName);
+  }
+
+  /**
+   * Creates a merge with the current head as the result.
+   */
+  public mergeSource(
+    target: string,
+    branchName = MAIN_BRANCH
+  ): WorkspaceManipulator<TState> {
+    const head = getHeadHash(this._workspace, branchName);
+
+    const commit = new MergeCommit<TState>(target, head, head);
+
+    return this.commit(commit, branchName);
   }
 
   public commit(

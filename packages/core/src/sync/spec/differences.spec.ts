@@ -1,6 +1,5 @@
 import { beforeEach, describe, it } from 'vitest';
 import {
-  MAIN_BRANCH,
   type Workspace,
   WorkspaceImp,
 } from '../../workspace/index.js';

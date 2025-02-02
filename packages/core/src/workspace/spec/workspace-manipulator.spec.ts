@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { SetCommand, TestState } from '../../test-state/index.js';
-import { getHeadHash, MAIN_BRANCH, WorkspaceImp } from '../workspace-imp.js';
+import { getHeadHash, WorkspaceImp } from '../workspace-imp.js';
 import { CommandCommit, RevertCommit } from '../../commit/index.js';
-import { makeLocalBranch } from '../../branches/index.js';
+import { MAIN_BRANCH, makeLocalBranch } from '../../branches/index.js';
 import { WorkspaceManipulator } from '../workspace-manipulator.js';
 
 describe('WorkspaceManipulator', () => {

@@ -1,38 +1,46 @@
-import { MAIN_BRANCH, type Workspace } from '../workspace/index.js';
+import { type Workspace } from '../workspace/index.js';
 import { type RemoteFetcher } from '../remote-fetcher/index.js';
-import { makeLocalBranch, makeRemoteBranch } from '../branches/index.js';
+import {
+  MAIN_BRANCH,
+  makeLocalBranch,
+  makeRemoteBranch,
+} from '../branches/index.js';
 import { type Differences, getDifferences } from './differences.js';
 import { getAllPreviousCommitsHashes } from '../workspace/navigation.js';
-import { haveSameItems } from '../utils/index.js';
 
-export type Conflict<TState> = {
-  local: TState;
-  remote: TState;
+export type SyncedState<TState> = {
+  status: 'Synced';
+
+  workspace: Workspace<TState>;
 };
 
-export type SynchronizationResult<TState> =
-  | Workspace<TState>
-  | Conflict<TState>;
+export type ConflictState<TState> = {
+  status: 'Conflict';
 
-export function isMerged<TState>(
-  result: SynchronizationResult<TState>
-): result is Workspace<TState> {
-  return !isConflict(result);
+  workspace: Workspace<TState>;
+};
+
+export type SynchronizationState<TState> =
+  | SyncedState<TState>
+  | ConflictState<TState>;
+
+export function isSynced<TState>(
+  result: SynchronizationState<TState>
+): result is SyncedState<TState> {
+  return result.status === 'Synced';
 }
 
 export function isConflict<TState>(
-  result: SynchronizationResult<TState>
-): result is Conflict<TState> {
-  const conflictKeys = new Set<keyof Conflict<TState>>(['local', 'remote']);
-
-  return haveSameItems(Object.keys(result), conflictKeys);
+  result: SynchronizationState<TState>
+): result is ConflictState<TState> {
+  return result.status === 'Conflict';
 }
 
 export async function fetchAndSynchronizeBranch<TState>(
   workspace: Workspace<TState>,
   fetcher: RemoteFetcher<TState>,
   branchName = MAIN_BRANCH
-): Promise<SynchronizationResult<TState>> {
+): Promise<SynchronizationState<TState>> {
   const refsUpdated = await fetch(workspace, fetcher, branchName);
   const ready = await ensureBranchesCreated(refsUpdated, fetcher, branchName);
 
@@ -101,17 +109,23 @@ async function synchronizeBranch<TState>(
   workspace: Workspace<TState>,
   fetcher: RemoteFetcher<TState>,
   branchName: string
-): Promise<SynchronizationResult<TState>> {
+): Promise<SynchronizationState<TState>> {
   const differences = getDifferences(workspace, branchName);
 
   if (isRemoteAhead(differences)) {
-    return fastForward(workspace, branchName);
+    return {
+      status: 'Synced',
+      workspace: fastForward(workspace, branchName),
+    };
   } else if (isLocalAhead(differences)) {
-    return await push(workspace, fetcher, branchName);
+    return {
+      status: 'Synced',
+      workspace: await push(workspace, fetcher, branchName),
+    };
   } else if (noDifference(differences)) {
-    return workspace;
+    return { status: 'Synced', workspace };
   } else if (isInConflict(differences)) {
-    return getConflict(workspace, branchName);
+    return { status: 'Conflict', workspace };
   } else {
     // Will never happen.
 
@@ -187,20 +201,4 @@ async function push<TState>(
   const newBranches = workspace.branches.updateBranch(newRemote);
 
   return workspace.setBranches(newBranches);
-}
-
-function getConflict<TState>(
-  workspace: Workspace<TState>,
-  branchName: string
-): Conflict<TState> {
-  const localBranch = workspace.branches.getLocalBranch(branchName);
-  const remoteBranch = workspace.branches.getRemoteBranch(branchName);
-
-  const local = workspace.getState(localBranch.head);
-  const remote = workspace.getState(remoteBranch.head);
-
-  return {
-    local,
-    remote,
-  };
 }

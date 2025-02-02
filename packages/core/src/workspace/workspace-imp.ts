@@ -6,11 +6,10 @@ import { uuid } from '../id.js';
 import {
   type Branches,
   BranchesImp,
+  MAIN_BRANCH,
   makeLocalBranch,
 } from '../branches/index.js';
 import { haveSameItems } from '../utils/index.js';
-
-export const MAIN_BRANCH = 'main';
 
 export class WorkspaceImp<TState> implements Workspace<TState> {
   private readonly _commits: Record<string, Commit<TState>>;

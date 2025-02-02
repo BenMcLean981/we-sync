@@ -63,3 +63,5 @@ export function isRemoteBranch(branch: Branch): branch is RemoteBranch {
 export function areBranchesEqual(b1: Branch, b2: Branch): boolean {
   return b1.name === b2.name && b1.type === b2.type && b1.head === b2.head;
 }
+
+export const MAIN_BRANCH = 'main';

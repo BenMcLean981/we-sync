@@ -1,11 +1,15 @@
-import { getHeadHash, MAIN_BRANCH, WorkspaceImp } from '../workspace-imp.js';
+import { getHeadHash, WorkspaceImp } from '../workspace-imp.js';
 import {
   CommandCommit,
   type Commit,
   InitialCommit,
   MergeCommit,
 } from '../../commit/index.js';
-import { type LocalBranch, makeLocalBranch } from '../../branches/branches.js';
+import {
+  type LocalBranch,
+  MAIN_BRANCH,
+  makeLocalBranch,
+} from '../../branches/branches.js';
 import { SetCommand, TestState } from '../../test-state/index.js';
 import { beforeEach, describe, it } from 'vitest';
 import { type Workspace } from '../workspace.js';
