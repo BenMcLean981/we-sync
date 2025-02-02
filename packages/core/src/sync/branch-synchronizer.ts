@@ -56,7 +56,9 @@ async function fetch<TState>(
       makeRemoteBranch(branchName, remoteBranch.head)
     );
 
-    return workspace.addCommits(remoteAfter).setBranches(newBranches);
+    const toAdd = remoteAfter.filter((c) => !workspace.hasCommit(c.hash));
+
+    return workspace.addCommits(toAdd).setBranches(newBranches);
   }
 }
 
@@ -67,7 +69,7 @@ function getHashToFetchFrom(
   if (workspace.branches.containsRemoteBranch(branchName)) {
     return workspace.branches.getRemoteBranch(branchName).head;
   } else {
-    return workspace.branches.getLocalBranch(branchName).head;
+    return workspace.initialHash;
   }
 }
 

@@ -8,6 +8,8 @@ export interface Workspace<TState> extends Equalable {
 
   readonly branches: Branches;
 
+  readonly initialHash: string;
+
   getState(hash: string): TState;
 
   hasCommit(hash: string): boolean;

@@ -37,6 +37,18 @@ export class WorkspaceImp<TState> implements Workspace<TState> {
     return this._branches;
   }
 
+  public get initialHash(): string {
+    const initialCommit = Object.values(this._commits).find(
+      (c) => c instanceof InitialCommit
+    );
+
+    if (initialCommit === undefined) {
+      throw new Error('No initial commit.');
+    }
+
+    return initialCommit.hash;
+  }
+
   public static makeNew<TState extends Memento>(
     initial: TState
   ): Workspace<TState> {
@@ -153,4 +165,13 @@ export function getHeadHash(
   branchName = MAIN_BRANCH
 ) {
   return workspace.branches.getLocalBranch(branchName).head;
+}
+
+export function getHeadState<TState>(
+  workspace: Workspace<TState>,
+  branchName = MAIN_BRANCH
+): TState {
+  const headHash = getHeadHash(workspace, branchName);
+
+  return workspace.getState(headHash);
 }

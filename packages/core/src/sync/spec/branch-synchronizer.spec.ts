@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  type Conflict,
   fetchAndSynchronizeBranch,
-  getHeadHash,
+  getHeadState,
+  isConflict,
   isMerged,
   type SynchronizationResult,
   type Workspace,
@@ -37,9 +39,7 @@ describe('fetchAndSynchronizeBranch', () => {
 
     const result = await fetchAndSynchronizeBranch(base, fetcher);
 
-    const expectedHead = getHeadHash(base);
-
-    expectMerged(result, fetcher.workspace, expectedHead);
+    expectMerged(result, fetcher.workspace, getHeadState(base));
   });
 
   it('Does nothing when there is no difference.', async () => {
@@ -47,9 +47,7 @@ describe('fetchAndSynchronizeBranch', () => {
 
     const result = await fetchAndSynchronizeBranch(ahead1, fetcher);
 
-    const expectedHead = getHeadHash(ahead1);
-
-    expectMerged(result, fetcher.workspace, expectedHead);
+    expectMerged(result, fetcher.workspace, getHeadState(ahead1));
   });
 
   it('Pushes missing commits when local ahead.', async () => {
@@ -57,9 +55,7 @@ describe('fetchAndSynchronizeBranch', () => {
 
     const result = await fetchAndSynchronizeBranch(ahead1, fetcher);
 
-    const expectedHead = getHeadHash(ahead1);
-
-    expectMerged(result, fetcher.workspace, expectedHead);
+    expectMerged(result, fetcher.workspace, getHeadState(ahead1));
   });
 
   it('Pulls missing commits when remote ahead.', async () => {
@@ -67,23 +63,42 @@ describe('fetchAndSynchronizeBranch', () => {
 
     const result = await fetchAndSynchronizeBranch(base, fetcher);
 
-    const expectedHead = getHeadHash(ahead1);
-
-    expectMerged(result, fetcher.workspace, expectedHead);
+    expectMerged(result, fetcher.workspace, getHeadState(ahead1));
   });
 
-  it.todo('Returns a merge conflict.');
+  it('Returns a merge conflict.', async () => {
+    const fetcher = new WorkspaceBasedRemoteFetcher(ahead1);
+
+    const result = await fetchAndSynchronizeBranch(ahead2, fetcher);
+
+    expectConflict(result, {
+      remote: getHeadState(ahead1),
+      local: getHeadState(ahead2),
+    });
+  });
 
   function expectMerged(
     result: SynchronizationResult<TestState>,
     remote: Workspace<TestState>,
-    expectedHash: string
+    expectedState: TestState
   ): void {
     if (!isMerged(result)) {
       expect.fail('Not merged.');
     }
 
-    expect(getHeadHash(result)).toBe(expectedHash);
-    expect(getHeadHash(remote)).toBe(expectedHash);
+    expect(getHeadState(result).equals(expectedState)).toBe(true);
+    expect(getHeadState(remote).equals(expectedState)).toBe(true);
+  }
+
+  function expectConflict(
+    result: SynchronizationResult<TestState>,
+    expected: Conflict<TestState>
+  ): void {
+    if (!isConflict(result)) {
+      expect.fail('Not in conflict.');
+    }
+
+    expect(result.remote.equals(expected.remote)).toBe(true);
+    expect(result.local.equals(expected.local)).toBe(true);
   }
 });
